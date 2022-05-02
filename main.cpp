@@ -13,6 +13,8 @@ using namespace::std;
 struct node
 {
   int data;
+  bool red;
+  node* parent;
   node* child1;
   node* child2;
 };
@@ -20,7 +22,7 @@ struct node
 bool isNum(char input[]);
 int charToInt(char input[]);
 void print(node* root, int count);
-void add(node* &root, int value);
+void add(node* &root, node* &current, node* parent, int value);
 void remove(node* &root, node* parent, int value);
 node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
@@ -69,7 +71,7 @@ int main()
     else
     {
       if (isNum(input) == true) { //if input is a number
-  			add(tree, charToInt(input));
+  			add(tree, tree, tree, charToInt(input));
         cout << "Inserted " << input << ".\n\n";
   		} 
       else { //try to find file name
@@ -78,7 +80,7 @@ int main()
   			if (file.is_open()) {
   				int num;
   				while (file >> num) { //read in numbers from file
-  					add(tree, num);
+  					add(tree, tree, tree, num);
             cout << "Inserted " << num << ".\n\n";
 
   				}
@@ -145,8 +147,8 @@ void print(node* root, int count)
   }
 }
 
-//adds a node containing value as the proper leaf node
-void add(node* &root, int value)
+//adds a node with value
+void add(node* &root, node* &current, node* parent, int value)
 {
   if(root == NULL) //if at end of tree
   {
@@ -154,17 +156,29 @@ void add(node* &root, int value)
     //create node
     node* n = new node();
     n->data = value;
+    n->red = false;
+    n->parent = NULL;
     n->child1 = NULL;
     n->child2 = NULL; 
     root = n;
   }
-  else if(value > root->data) //go right subtree
+  else if(current == NULL)
   {
-    add(root->child2, value);
+    node* n = new node();
+    n->data = value;
+    n->red = true;
+    n->parent = parent;
+    n->child1 = NULL;
+    n->child2 = NULL; 
+    current = n;
+  }
+  else if(value > current->data) //go right subtree
+  {
+    add(root, current->child2, current, value);
   }
   else //go left subtree
   {
-    add(root->child1, value);
+    add(root, current->child1, current, value);
   }
 }
 
