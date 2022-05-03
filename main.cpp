@@ -337,17 +337,25 @@ node* findSuccessorWithTwoChildren(node* &parent, node* child2)
 
 void balance(node* n)
 {
-
+  if(getUncle(n)->red == true) //if uncle is red
+  {
+    
+  }
+  else //if uncle is black
+  {
+    
+  }
 }
 
+//returns a pointer to the uncle of node n
 node* getUncle(node* n)
 {
-  if(n->parent->parent->child1 == n->parent)
+  if(n->parent->parent->child1 == n->parent) //if grandparent child1 is parent, uncle is grandparent child2
   {
     return n->parent->parent->child2;
   
   }
-  else
+  else //if grandparent child1 is not parent, uncle is grandparent child1
   {
     return n->parent->parent->child1;
   }
