@@ -26,6 +26,8 @@ void add(node* &root, node* &current, node* parent, int value);
 void remove(node* &root, node* parent, int value);
 node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
+void balance(node* n);
+node* getUncle(node* n);
 
 int main()
 {
@@ -330,5 +332,23 @@ node* findSuccessorWithTwoChildren(node* &parent, node* child2)
   {
     parent = child2;
     findSuccessorWithTwoChildren(parent, child2->child1);
+  }
+}
+
+void balance(node* n)
+{
+
+}
+
+node* getUncle(node* n)
+{
+  if(n->parent->parent->child1 == n->parent)
+  {
+    return n->parent->parent->child2;
+  
+  }
+  else
+  {
+    return n->parent->parent->child1;
   }
 }
