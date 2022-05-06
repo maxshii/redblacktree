@@ -194,10 +194,20 @@ void add(node* &root, node* &current, node* parent, int value)
         { 
           while(x->parent != NULL) //color parent and uncle black, grandpa red. Repeat for grandpa as x.
           {
-            x->parent->red = false;
-            getUncle(x)->red = false;
-            parent->parent->red = true;
-            x = parent->parent;
+            if(x->parent->parent != NULL)
+            {
+              x->parent->red = false;
+              if(getUncle(x) != NULL)
+              {    
+                getUncle(x)->red = false;
+              }
+              parent->parent->red = true;
+              x = parent->parent;
+            }
+            else
+            { 
+              break;
+            }
           }
           if(root->red == true) //color root black if it is red
           {
@@ -211,8 +221,31 @@ void add(node* &root, node* &current, node* parent, int value)
         {
           if(x == x->parent->child1) //ll: x is left child of parent
           {
-            x = rotateRight(x->parent->parent);
+            if(root == x->parent->parent) //if head is changed, update head
+            {
+              x = rotateRight(x->parent->parent);
+              root = x;
+              root->parent = NULL;
+            }
+            else
+            {
+              node* ggp = parent->parent->parent;
+              if(ggp->child1 == parent->parent) //grandparent is greatgp's left child
+              {
+                x = rotateRight(x->parent->parent);
 
+                //connect rotated subtree's root to the parent of prerotation subtree's root
+                x->parent = ggp;
+                ggp->child1 = x;
+              }
+              else //grandparent is greatgp's right child
+              {
+                x = rotateRight(x->parent->parent);
+                x->parent = ggp;
+                ggp->child2 = x;
+              }
+              
+            }
             //swap colors of parent and grandparent of x before rotation
             bool color = x->red;
             x->red = x->child2->red;
@@ -220,10 +253,60 @@ void add(node* &root, node* &current, node* parent, int value)
           }
           else //lr: x is right child of parent
           {
-            x = rotateLeft(x->parent);
+            if(root == x->parent) //if head is changed, update head
+            {
+              x = rotateLeft(x->parent);
+              root = x;
+              root->parent = NULL;
 
+            }
+            else
+            {
+              node* gp = parent->parent;
+              if(gp->child1 == parent) //parent is gp's left child
+              {
+                x = rotateLeft(x->parent);
+
+                //connect rotated subtree's root to the parent of prerotation subtree's root
+                x->parent = gp;
+                gp->child1 = x;
+              }
+              else //parent is gp's right child
+              {
+                x = rotateLeft(x->parent);
+                x->parent = gp;
+                gp->child2 = x;
+              }
+              
+            }
+            x = x->child1;
             //ll case
-            x = rotateRight(x->parent->parent);
+            if(root == x->parent->parent) //if head is changed, update head
+            {
+              x = rotateRight(x->parent->parent);
+              root = x;
+              root->parent = NULL;
+            }
+            else
+            {
+              node* ggp = parent->parent->parent;
+              if(ggp->child1 == parent->parent) //grandparent is greatgp's left child
+              {
+                x = rotateRight(x->parent->parent);
+
+                //connect rotated subtree's root to the parent of prerotation subtree's root
+                x->parent = ggp;
+                ggp->child1 = x;
+              }
+              else //grandparent is greatgp's right child
+              {
+                x = rotateRight(x->parent->parent);
+                x->parent = ggp;
+                ggp->child2 = x;
+              }
+              
+            }
+            //swap colors of parent and grandparent of x before rotation
             bool color = x->red;
             x->red = x->child2->red;
             x->child2->red = color;
@@ -233,7 +316,32 @@ void add(node* &root, node* &current, node* parent, int value)
         {
           if(x == x->parent->child2) //rr: x is right child of parent
           {
-            x = rotateLeft(x->parent->parent);
+            if(root == x->parent->parent) //if head is changed, update head
+            {
+              x = rotateLeft(x->parent->parent);
+              root = x;
+              root->parent = NULL;
+            }
+            else //head is not changed
+            {
+              node* ggp = parent->parent->parent;
+              if(ggp->child1 == parent->parent) //grandparent is greatgp's left child
+              {
+                x = rotateLeft(x->parent->parent);
+
+                //connect rotated subtree's root to the parent of prerotation subtree's root
+                x->parent = ggp;
+                ggp->child1 = x;
+              }
+              else //grandparent is greatgp's right child
+              {
+                x = rotateLeft(x->parent->parent);
+                x->parent = ggp;
+                ggp->child2 = x;
+              }
+              
+              
+            }
            //swap colors of parent and grandparent of x before rotation
             bool color = x->red;
             x->red = x->child1->red;
@@ -241,10 +349,59 @@ void add(node* &root, node* &current, node* parent, int value)
           }
           else //rl: x is right child of parent
           {
-            x = rotateRight(x->parent);
+            if(root == x->parent) //if head is changed, update head
+            {
+              x = rotateRight(x->parent);
+              root = x;
+              root->parent = NULL;
+            }
+            else
+            {
+              node* gp = parent->parent;
+              if(gp->child1 == parent) //parent is gp's left child
+              {
+                x = rotateRight(x->parent);
+                //connect rotated subtree's root to the parent of prerotation subtree's root
+                x->parent = gp;
+                gp->child1 = x;
+              }
+              else //parent is gp's right child
+              {
+                x = rotateRight(x->parent);
+                x->parent = gp;
+                gp->child2 = x;
+              }
+            }
 
+            x = x->child2;
             //rr case
-            x = rotateLeft(x->parent->parent);
+           if(root == x->parent->parent) //if head is changed, update head
+            {
+              x = rotateLeft(x->parent->parent);
+              root = x;
+              root->parent = NULL;
+            }
+            else //head is not changed
+            {
+              node* ggp = parent->parent->parent;
+              if(ggp->child1 == parent->parent) //grandparent is greatgp's left child
+              {
+                x = rotateLeft(x->parent->parent);
+
+                //connect rotated subtree's root to the parent of prerotation subtree's root
+                x->parent = ggp;
+                ggp->child1 = x;
+              }
+              else //grandparent is greatgp's right child
+              {
+                x = rotateLeft(x->parent->parent);
+                x->parent = ggp;
+                ggp->child2 = x;
+              }
+              
+              
+            }
+           //swap colors of parent and grandparent of x before rotation
             bool color = x->red;
             x->red = x->child1->red;
             x->child1->red = color;
