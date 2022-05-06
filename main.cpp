@@ -28,6 +28,8 @@ node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
 void balance(node* n);
 node* getUncle(node* n);
+node* rotateLeft(node* n);
+node* rotateRight(node* n);
 
 int main()
 {
@@ -144,6 +146,14 @@ void print(node* root, int count)
       {
         cout << "    ";
       }
+    if(root->red == true)
+    {
+      cout << "RED: ";
+    }
+    else
+    {
+      cout << "BLACK: ";
+    }
     cout << root->data << endl;
     print(root->child1, count+1);
   }
@@ -154,7 +164,6 @@ void add(node* &root, node* &current, node* parent, int value)
 {
   if(root == NULL) //if at end of tree
   {
-
     //create node
     node* n = new node();
     n->data = value;
@@ -163,6 +172,8 @@ void add(node* &root, node* &current, node* parent, int value)
     n->child1 = NULL;
     n->child2 = NULL; 
     root = n;
+
+    
   }
   else if(current == NULL)
   {
@@ -173,6 +184,74 @@ void add(node* &root, node* &current, node* parent, int value)
     n->child1 = NULL;
     n->child2 = NULL; 
     current = n;
+
+    node* x = current;
+    if(parent->red == true) 
+    {
+      if(getUncle(x) != NULL)
+      {
+        if(getUncle(x)->red == true) //uncle is red
+        { 
+          while(x->parent != NULL) //color parent and uncle black, grandpa red. Repeat for grandpa as x.
+          {
+            x->parent->red = false;
+            getUncle(x)->red = false;
+            parent->parent->red = true;
+            x = parent->parent;
+          }
+          if(root->red == true) //color root black if it is red
+          {
+            root->red = false;
+          }
+        }
+      }
+      else //uncle is black
+      {
+        if(x->parent == x->parent->parent->child1) //l: parent is left child of gp
+        {
+          if(x == x->parent->child1) //ll: x is left child of parent
+          {
+            x = rotateRight(x->parent->parent);
+
+            //swap colors of parent and grandparent of x before rotation
+            bool color = x->red;
+            x->red = x->child2->red;
+            x->child2->red = color;
+          }
+          else //lr: x is right child of parent
+          {
+            x = rotateLeft(x->parent);
+
+            //ll case
+            x = rotateRight(x->parent->parent);
+            bool color = x->red;
+            x->red = x->child2->red;
+            x->child2->red = color;
+          }
+        }
+        else //r: parent is right child of grandparent
+        {
+          if(x == x->parent->child2) //rr: x is right child of parent
+          {
+            x = rotateLeft(x->parent->parent);
+           //swap colors of parent and grandparent of x before rotation
+            bool color = x->red;
+            x->red = x->child1->red;
+            x->child1->red = color;
+          }
+          else //rl: x is right child of parent
+          {
+            x = rotateRight(x->parent);
+
+            //rr case
+            x = rotateLeft(x->parent->parent);
+            bool color = x->red;
+            x->red = x->child1->red;
+            x->child1->red = color;
+          }
+        }
+      }
+    }
   }
   else if(value > current->data) //go right subtree
   {
@@ -359,4 +438,30 @@ node* getUncle(node* n)
   {
     return n->parent->parent->child1;
   }
+}
+
+//rotates left
+node* rotateLeft(node* n)
+{
+  node* x = n->child2;
+  node* y = x->child1;
+  x->child1 = n;
+  n->child2 = y;
+  n->parent = x; 
+  if(y != NULL)
+      y->parent = n;
+  return(x);
+}
+
+//rotates right
+node* rotateRight(node* n)
+{
+  node* x = n->child1;
+  node* y = x->child2;
+  x->child2 = n;
+  n->child1 = y;
+  n->parent = x;
+  if(y != NULL)
+      y->parent = n;
+  return(x);
 }
