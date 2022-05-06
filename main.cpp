@@ -35,7 +35,7 @@ int main()
 {
   node* tree = NULL;
   while (true) {
-    cout << "Instructions: Enter a number or file name or SEARCH, REMOVE, PRINT, or QUIT\n";
+    cout << "Instructions: ADD, READ, SEARCH, REMOVE, PRINT, or QUIT\n";
 		char input[80];
 		cin.getline(input, 80, '\n');
 
@@ -56,13 +56,13 @@ int main()
       }
     }
     else if(strcmp(input, "REMOVE") == 0)
-    {
+    {/* TO BE IMPLEMENTED
       cout << "Enter value to remove: ";
       cin.getline(input, 80, '\n');
       if (isNum(input) == true) //if input is a number
       { 
         remove(tree, tree, charToInt(input));
-      }
+      }*/
     }
     else if(strcmp(input, "PRINT") == 0)
     {
@@ -72,26 +72,36 @@ int main()
     {
       break;
     }
-    else
+    else if(strcmp(input, "ADD") == 0)
     {
+      cout << "Enter value to add: ";
+      cin.getline(input, 80, '\n');
       if (isNum(input) == true) { //if input is a number
   			add(tree, tree, tree, charToInt(input));
         cout << "Inserted " << input << ".\n\n";
   		} 
-      else { //try to find file name
-  			fstream file;
-  			file.open(input);
-  			if (file.is_open()) {
-  				int num;
-  				while (file >> num) { //read in numbers from file
-  					add(tree, tree, tree, num);
-            cout << "Inserted " << num << ".\n\n";
+      else
+      {
+        cout << "Invalid input.";
+      }
+    }
+    else if(strcmp(input, "READ") == 0)
+    {
+      cout << "Enter file name: ";
+      cin.getline(input, 80, '\n');
 
-  				}
-  			} else {
-  				cout << "Error opening file.\n";
-  			}
-  		}
+      fstream file;
+      file.open(input);
+      if (file.is_open()) {
+        int num;
+        while (file >> num) { //read in numbers from file
+          add(tree, tree, tree, num);
+          cout << "Inserted " << num << ".\n\n";
+
+        }
+      } else {
+        cout << "Error opening file.\n";
+      }
     }
   }
 }
