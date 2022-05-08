@@ -1,0 +1,4 @@
+# ignore windows output
+*.exe
+# ignore unix/linux output
+*.out
