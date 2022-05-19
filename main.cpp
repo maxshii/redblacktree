@@ -26,7 +26,7 @@ void add(node* &root, node* &current, node* parent, int value);
 void remove(node* &root, node* parent, int value);
 node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
-void balance(node* n);
+void balance(node* &root, node* x, node* parent);
 node* getUncle(node* n);
 node* rotateLeft(node* n);
 node* rotateRight(node* n);
@@ -195,38 +195,29 @@ void add(node* &root, node* &current, node* parent, int value)
     n->child2 = NULL; 
     current = n;
 
-    node* x = current;
+    balance(root, current, current->parent);
+    
+  }
+  else if(value > current->data) //go right subtree
+  {
+    add(root, current->child2, current, value);
+  }
+  else //go left subtree
+  {
+    add(root, current->child1, current, value);
+  }
+}
+
+void balance(node* &root, node* x, node* parent)
+{
+
+  if(parent != NULL)
+  {
     if(parent->red == true) 
     {
-      if(getUncle(x) != NULL)
+      if(getUncle(x) == NULL || getUncle(x)->red == false) //uncle is black
       {
-        if(getUncle(x)->red == true) //uncle is red
-        { 
-          while(x->parent != NULL) //color parent and uncle black, grandpa red. Repeat for grandpa as x.
-          {
-            if(x->parent->parent != NULL)
-            {
-              x->parent->red = false;
-              if(getUncle(x) != NULL)
-              {    
-                getUncle(x)->red = false;
-              }
-              parent->parent->red = true;
-              x = parent->parent;
-            }
-            else
-            { 
-              break;
-            }
-          }
-          if(root->red == true) //color root black if it is red
-          {
-            root->red = false;
-          }
-        }
-      }
-      else //uncle is black
-      {
+        
         if(x->parent == x->parent->parent->child1) //l: parent is left child of gp
         {
           if(x == x->parent->child1) //ll: x is left child of parent
@@ -418,18 +409,33 @@ void add(node* &root, node* &current, node* parent, int value)
           }
         }
       }
+      else //uncle is red
+      {
+        if(getUncle(x)->red == true) //uncle is red
+        { 
+          
+            if(x->parent->parent != NULL)
+            {
+              x->parent->red = false;
+              if(getUncle(x) != NULL)
+              {    
+                getUncle(x)->red = false;
+              }
+              parent->parent->red = true;
+              x = parent->parent;
+              balance(root, x, x->parent);
+            
+          }
+          if(root->red == true) //color root black if it is red
+          {
+            root->red = false;
+          }
+        }
+        
+      }
     }
   }
-  else if(value > current->data) //go right subtree
-  {
-    add(root, current->child2, current, value);
-  }
-  else //go left subtree
-  {
-    add(root, current->child1, current, value);
-  }
 }
-
 //searches tree and returns node of specified value
 node* search(node* &root, int value)
 {
@@ -581,17 +587,7 @@ node* findSuccessorWithTwoChildren(node* &parent, node* child2)
   }
 }
 
-void balance(node* n)
-{
-  if(getUncle(n)->red == true) //if uncle is red
-  {
-    
-  }
-  else //if uncle is black
-  {
-    
-  }
-}
+
 
 //returns a pointer to the uncle of node n
 node* getUncle(node* n)
