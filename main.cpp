@@ -173,7 +173,7 @@ void print(node* root, int count)
 void add(node* &root, node* &current, node* parent, int value)
 {
   if(root == NULL) //if at end of tree
-  {
+  {f
     //create node
     node* n = new node();
     n->data = value;
