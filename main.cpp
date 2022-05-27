@@ -1,7 +1,7 @@
 /*
  * Program to implement binary search tree.
  * By: Max Shi
- * 5/6/2022
+ * 5/27/2022
  */
 
 #include <iostream>
@@ -471,21 +471,32 @@ void remove(node* &root, node* n, node* parent, int value)
     {
       if (parent != n) //if there is more than one node in the tree
       {
-        
-         //delete the node
+	if(n->red == false) //n and its replacement are both black
+	  {
+	    delBalance(root, n->child1, n); //balance with n's replacement as NULL
+	  }
+	else //n is red and replacement is black(NULL)
+	  {
+	    if(getSibling(n) != NULL)
+	      {
+		getSibling(n)->red = true; //make sibling red
+	      }
+	  }
+
+	//remove n from tree
+	if (parent->child1 == n) //find which child is correct
+	  {
+	    parent->child1 = NULL;
+	  }
+	else
+	  {
+	    parent->child2 = NULL;
+	  }
+	
+	//delete the node
         delete n->child1;
         delete n->child2;
         delete n;
-        
-        if (parent->child1 == n) //find which child is correct
-        {
-            parent->child1 = NULL;
-        }
-        else 
-        {
-            parent->child2 = NULL;
-        }
-
        
       }
       else //if there is only one node in the tree
@@ -494,14 +505,13 @@ void remove(node* &root, node* n, node* parent, int value)
         delete n->child1;
         delete n->child2;
         delete n;
-        n = NULL;
+        root = NULL;
       }     
     }
     else if(n->child1 != NULL && n->child2 != NULL) //node to delete has 2 children
     {
       node* succParent = n;
-      node* succ = findSuccessorWithTwoChildren(succParent, n->child2); //finds successor and its parent
-      delBalance(root, n, succ); 
+      node* succ = findSuccessorWithTwoChildren(succParent, n->child2); //finds successor and its parent 
 
       n->data = succ->data; //copies data from succesor to n
       n->red = succ->red;
@@ -629,6 +639,30 @@ void delBalance(node* &root, node* u, node* v)
     u->red = false; //u becomes black
   }
  
+}
+
+//returns sibling of a node
+node* getSibling(node* n)
+{
+  if(n == NULL)
+    {
+      return NULL;
+    }
+
+  if(n->parent == NULL)
+    {
+      return NULL;
+    }
+
+  if(n = n->parent->child1) //n is parent child 1
+    {
+      return parent->child2; //return child2
+    }
+  else //n is parent child2
+    {
+      return parent->child1; //return child 1
+    }
+
 }
 
 //finds the inorder successor of a node with 2 children. Uses the right child of the node(child2). Additionally sets the parent to the parent of the successor.
