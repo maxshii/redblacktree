@@ -24,7 +24,7 @@ int charToInt(char input[]);
 void print(node* root, int count);
 void add(node* &root, node* &current, node* parent, int value);
 void remove(node* &root, node* n, node* parent, int value);
-void delBalance(node* &root, node* u, bool deletedColor);
+void delBalance(node* &root, node* u, node* v);
 node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
 void balance(node* &root, node* x, node* parent);
@@ -501,10 +501,11 @@ void remove(node* &root, node* n, node* parent, int value)
     {
       node* succParent = n;
       node* succ = findSuccessorWithTwoChildren(succParent, n->child2); //finds successor and its parent
+      delBalance(root, n, succ); 
+
       n->data = succ->data; //copies data from succesor to n
       n->red = succ->red;
       remove(root, succ, succParent, succ->data); //deletes successor
-      delBalance(root, n, n->red); 
     }
     else if(n->child1 != NULL) //node to delete has only child 1
     {
@@ -513,19 +514,20 @@ void remove(node* &root, node* n, node* parent, int value)
        if (parent->child1 == n) //find which parent child points to n
         {
           parent->child1 = n->child1; //parent is linked to n's child
-          delBalance(root, n->child1, n->red);
+          delBalance(root, n->child1, n);
           delete n; 
         }
         else 
         {
           parent->child2 = n->child1;        
-          delBalance(root, n->child1, n->red);
+          delBalance(root, n->child1, n);
           delete n;  
         }
       }
       else
       {
-        root = n->child2;        
+        root = n->child2;
+        root->red = false;
         delete n;
       }
     }
@@ -536,20 +538,22 @@ void remove(node* &root, node* n, node* parent, int value)
         if (parent->child1 == n) //find which parent child points to n
         {
           parent->child1 = n->child2;
-          delBalance(root, n->child2, n->red);
+          delBalance(root, n->child2, n);
           delete n;  
         }
         else 
         {
           parent->child2 = n->child2;   
-          delBalance(root, n->child2, n->red);
+          delBalance(root, n->child2, n);
           delete n;  
         }
       }
       else
       {
-        root = n->child2;        
+        root = n->child2;   
+        root->red = false;
         delete n; 
+      }
     }
   }
   else if(value > n->data) //goes down right subtree
@@ -560,19 +564,71 @@ void remove(node* &root, node* n, node* parent, int value)
   {
     remove(root, n->child1, n, value);
   }
-  
 }
 
-void delBalance(node* &root, node* u, bool deletedColor)
+//basically if uv both black
+          //sibling black and >1 children red: ll,lr,rr,rl rotations
+
+          //sibling black and 2 children black: recolor 
+                //parent black: recur on parent
+                //parent red: make parent black
+
+          //sibling red: rotations and recolors
+
+
+
+//balance when deleting with v as node that will be deleted and u as node that will replace it
+void delBalance(node* &root, node* u, node* v)
 {
-  if(u->red == true || deletedColor == true) //if u or the node it replaced was red
+  bool uvBlack = false;
+  if(u == NULL || u->red == false)
+  {
+    if(v->red == false)
+    {
+      uvBlack = true;
+    }
+  }
+
+  if(uvBlack == true) //u and v are black
+  {
+    if(v == root)
+    {
+      return;
+    }
+
+    if() //sibling NULL
+    {
+      //recur parent
+      return;
+    }
+    
+    if() //v sibling is black
+    {
+      if() //sibling child both black
+      {
+        //make sibling red
+        
+        if() //parent black
+        {
+          //recursion on parent
+        }
+        else
+        {
+          //make parent red
+        }
+      }
+      else if() //one or more of sibling child is red
+      {
+        
+      }
+      
+    }
+  }
+   else if(u->red == true || v->red == true) //if u or v are red
   {
     u->red = false; //u becomes black
   }
-  else if()
-  {
-    
-  }
+ 
 }
 
 //finds the inorder successor of a node with 2 children. Uses the right child of the node(child2). Additionally sets the parent to the parent of the successor.
