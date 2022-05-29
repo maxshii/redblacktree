@@ -1,7 +1,7 @@
 /*
- * Program to implement binary search tree.
+ * Program to implement red black tree.
  * By: Max Shi
- * 5/6/2022
+ * 5/27/2022
  */
 
 #include <iostream>
@@ -23,13 +23,17 @@ bool isNum(char input[]);
 int charToInt(char input[]);
 void print(node* root, int count);
 void add(node* &root, node* &current, node* parent, int value);
-void remove(node* &root, node* parent, int value);
+void remove(node* &root, node* n, node* parent, int value);
+void delBalance(node* &root, node* u, node* v);
 node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
 void balance(node* &root, node* x, node* parent);
 node* getUncle(node* n);
+node* getSibling(node* n);
 node* rotateLeft(node* n);
 node* rotateRight(node* n);
+void rotateHelp(node* &root, node* n, node* nParent);
+
 
 int main()
 {
@@ -56,13 +60,13 @@ int main()
       }
     }
     else if(strcmp(input, "REMOVE") == 0)
-    {/* TO BE IMPLEMENTED
+    {
       cout << "Enter value to remove: ";
       cin.getline(input, 80, '\n');
       if (isNum(input) == true) //if input is a number
       { 
-        remove(tree, tree, charToInt(input));
-      }*/
+        remove(tree, tree, tree, charToInt(input));
+      }
     }
     else if(strcmp(input, "PRINT") == 0)
     {
@@ -458,119 +462,263 @@ node* search(node* &root, int value)
 }
 
 //recursively searches tree and removes a node of the specified value
-void remove(node* &root, node* parent, int value)
+void remove(node* &root, node* n, node* parent, int value)
 {
-  if(root == NULL) //nothing in tree or reaches end
+  if(n == NULL) //nothing in tree or reaches end
   {
     return;
   }
-  else if(value == root->data) //finds a matching value
+  else if(value == n->data) //finds a matching value
   {
-    if(root->child1 == NULL && root->child2 == NULL) //node to delete is leaf
+    if(n->child1 == NULL && n->child2 == NULL) //node to delete is leaf
     {
-      if (parent != root) //if there is more than one node in the tree
+      if (parent != n) //if there is more than one node in the tree
       {
-        
-         //delete the node
-        delete root->child1;
-        delete root->child2;
-        delete root;
-        
-        if (parent->child1 == root) //find which child is correct
-        {
-            parent->child1 = NULL;
-        }
-        else 
-        {
-            parent->child2 = NULL;
-        }
+	if(n->red == false) //n and its replacement are both black
+	  {
+	    delBalance(root, n->child1, n); //balance with n's replacement as NULL
+	  }
+	else //n is red and replacement is black(NULL)
+	  {
+	    if(getSibling(n) != NULL)
+	      {
+		getSibling(n)->red = true; //make sibling red
+	      }
+	  }
 
+	//remove n from tree
+	if (parent->child1 == n) //find which child is correct
+	  {
+	    parent->child1 = NULL;
+	  }
+	else
+	  {
+	    parent->child2 = NULL;
+	  }
+	
+	      //delete the node
+        delete n->child1;
+        delete n->child2;
+        delete n;
        
       }
       else //if there is only one node in the tree
       {
         //delete the node
-        delete root->child1;
-        delete root->child2;
-        delete root;
+        delete n->child1;
+        delete n->child2;
+        delete n;
         root = NULL;
       }     
     }
-    else if(root->child1 != NULL && root->child2 != NULL) //node to delete has 2 children
+    else if(n->child1 != NULL && n->child2 != NULL) //node to delete has 2 children
     {
-      node* succParent = root;
-      node* succ = findSuccessorWithTwoChildren(succParent, root->child2); //finds successor and its parent
-      root->data = succ->data; //copies data from succesor to root
-      remove(succ, succParent, succ->data); //deletes successor
+      node* succParent = n;
+      node* succ = findSuccessorWithTwoChildren(succParent, n->child2); //finds successor and its parent 
+
+      n->data = succ->data; //copies data from succesor to n
+      n->red = succ->red;
+      remove(root, succ, succParent, succ->data); //deletes successor
     }
-    else if(root->child1 != NULL) //node to delete has only child 1
+    else if(n->child1 != NULL) //node to delete has only child 1
     {
-      if(parent != root) //if not at top of tree
+      if(root != n) //if not at top of tree
       {
-       if (parent->child1 == root) //find which child is correct
+       if (parent->child1 == n) //find which parent child points to n
         {
-          parent->child1 = root->child1; //parent is linked to root's child
-          delete root; 
+          parent->child1 = n->child1; //parent is linked to n's child
+          delBalance(root, n->child1, n);
+          delete n; 
         }
         else 
         {
-          parent->child2 = root->child1;        
-          delete root;  
+          parent->child2 = n->child1;        
+          delBalance(root, n->child1, n);
+          delete n;  
         }
       }
       else
       {
-        if (parent->child1 == root) //find which child is correct
-        {
-          root = root->child1; //root becomes child
-          delete parent; //delete old root
-        }
-        else 
-        {
-          root = root->child1;        
-          delete parent;  
-        }
+        root = n->child2;
+        root->red = false;
+        delete n;
       }
     }
-    else if(root->child2 != NULL) //node to delete has only child 2
+    else if(n->child2 != NULL) //node to delete has only child 2
     {
-      if(parent != root) //if not at top of tree
+      if(root != n) //if not at top of tree
       {
-        if (parent->child1 == root) //find which child is correct
+        if (parent->child1 == n) //find which parent child points to n
         {
-          parent->child1 = root->child2;
-          delete root;  
+          parent->child1 = n->child2;
+          delBalance(root, n->child2, n);
+          delete n;  
         }
         else 
         {
-          parent->child2 = root->child2;        
-          delete root;  
+          parent->child2 = n->child2;   
+          delBalance(root, n->child2, n);
+          delete n;  
         }
       }
       else
       {
-        if (parent->child1 == root) //find which child is correct
-        {
-          root = root->child1;
-          delete parent;  
-        }
-        else 
-        {
-          root = root->child1;        
-          delete parent;  
-        }
+        root = n->child2;   
+        root->red = false;
+        delete n; 
       }
     }
   }
-  else if(value > root->data) //goes down right subtree
+  else if(value > n->data) //goes down right subtree
   {
-    remove(root->child2, root, value);
+    remove(root, n->child2, n, value);
   }
   else //goes down left subtree
   {
-    remove(root->child1, root, value);
+    remove(root, n->child1, n, value);
   }
-  
+}
+
+//basically if uv both black
+          //sibling black and >1 children red: ll,lr,rr,rl rotations
+
+          //sibling black and 2 children black: recolor 
+                //parent black: recur on parent
+                //parent red: make parent black
+
+          //sibling red: rotations and recolors
+
+
+
+//balance when deleting with v as node that will be deleted and u as node that will replace it
+void delBalance(node* &root, node* u, node* v)
+{
+  bool uvBlack = false;
+  if(u == NULL || u->red == false)
+  {
+    if(v->red == false)
+    {
+      uvBlack = true;
+    }
+  }
+
+  if(uvBlack == true) //u and v are black
+  {
+    if(v == root)
+    {
+      return;
+    }
+
+    node* sibling = getSibling(v);
+    if(sibling == NULL) //sibling NULL
+    {
+      cout << "snull";
+      delBalance(root, NULL, v->parent);
+      return;
+    }
+    
+    if(sibling->red == false) //v sibling is black
+    {
+      
+      if(sibling->child1 == NULL || sibling->child1->red == false)
+      {
+        if(sibling->child2 == NULL || sibling->child2->red == false)  //sibling child both black
+        {
+          sibling->red = true; //make sibling red
+          
+          if(v->parent->red == false) //parent black
+          {
+            delBalance(root, NULL, v->parent); //recursion on parent
+          }
+          else //parent red
+          {
+            v->parent->red = false; //make parent black
+          }
+          return;
+        }
+      }
+        
+      //one or more of sibling child is red
+      node* parent = sibling->parent;
+      node* gp = parent->parent;
+      if(sibling == sibling->parent->child1) //sibling on left
+      {
+        if(sibling->child1 != NULL && sibling->child1->red == true) //ll: sibling child1 is red
+        {
+          sibling->child1->red = sibling->red;
+          sibling->red = sibling->parent->red;
+          rotateHelp(root, rotateRight(parent), gp);          
+        }
+        else //lr: sibling child 2 is red
+        {
+          sibling->child2->red = sibling->parent->red;
+          rotateHelp(root, rotateLeft(sibling), parent);
+          rotateHelp(root, rotateRight(parent), gp);
+        }        
+      }
+      else //sibling on right
+      {
+        if(sibling->child2 != NULL && sibling->child2->red == true) //rr: sibling child1 is red
+        {
+          sibling->child2->red = sibling->red;
+          sibling->red = sibling->parent->red;
+          rotateHelp(root, rotateLeft(parent), gp);          
+        }
+        else //rl: sibling child 2 is red
+        {
+          sibling->child1->red = sibling->parent->red;
+          rotateHelp(root, rotateRight(sibling), parent);
+          rotateHelp(root, rotateLeft(parent), gp);
+        }
+      }
+      
+      
+    }
+    else //sibling red
+    {
+      v->parent->red = true;
+      sibling->red = false;
+
+      if(sibling == sibling->parent->child1) //sibling on left
+      {
+        rotateRight(sibling->parent);
+      }
+      else //sibling on right
+      {
+        rotateLeft(sibling->parent);
+      }
+      delBalance(root, u, v);
+    }
+  }
+   else if(u->red == true || v->red == true) //if u or v are red
+  {
+    u->red = false; //u becomes black
+  }
+ 
+}
+
+//returns sibling of a node
+node* getSibling(node* n)
+{
+  if(n == NULL)
+    {
+      return NULL;
+    }
+
+  if(n->parent == NULL)
+    {
+      return NULL;
+    }
+
+  if(n == n->parent->child1) //n is parent child 1
+    {
+      return n->parent->child2; //return child2
+    }
+  else //n is parent child2
+    {
+      return n->parent->child1; //return child 1
+    }
+
 }
 
 //finds the inorder successor of a node with 2 children. Uses the right child of the node(child2). Additionally sets the parent to the parent of the successor.
@@ -627,4 +775,26 @@ node* rotateRight(node* n)
   if(y != NULL)
       y->parent = n;
   return(x);
+}
+
+//connects a rotated subtree to the rest of the tree. Uses the top of the rotated subtree.
+void rotateHelp(node* &root, node* n, node* nParent)
+{
+  if(nParent == NULL)
+  {
+    root = n;
+    root->parent = NULL;
+  }
+  else
+  {
+    n->parent = nParent;
+    if(n == nParent->child1) //sibling on left
+    {
+      nParent->child1 = n; //connect nParent to n
+    }
+    else
+    {
+      nParent->child2 = n;
+    }
+  }
 }
