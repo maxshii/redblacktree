@@ -1,5 +1,5 @@
 /*
- * Program to implement binary search tree.
+ * Program to implement red black tree.
  * By: Max Shi
  * 5/27/2022
  */
@@ -29,6 +29,7 @@ node* search(node* &root, int value);
 node* findSuccessorWithTwoChildren(node* &parent, node* child2);
 void balance(node* &root, node* x, node* parent);
 node* getUncle(node* n);
+node* getSibling(node* n);
 node* rotateLeft(node* n);
 node* rotateRight(node* n);
 
@@ -57,13 +58,13 @@ int main()
       }
     }
     else if(strcmp(input, "REMOVE") == 0)
-    {/* TO BE IMPLEMENTED
+    {
       cout << "Enter value to remove: ";
       cin.getline(input, 80, '\n');
       if (isNum(input) == true) //if input is a number
       { 
-        remove(tree, tree, charToInt(input));
-      }*/
+        remove(tree, tree, tree, charToInt(input));
+      }
     }
     else if(strcmp(input, "PRINT") == 0)
     {
@@ -493,7 +494,7 @@ void remove(node* &root, node* n, node* parent, int value)
 	    parent->child2 = NULL;
 	  }
 	
-	//delete the node
+	      //delete the node
         delete n->child1;
         delete n->child2;
         delete n;
@@ -606,32 +607,84 @@ void delBalance(node* &root, node* u, node* v)
       return;
     }
 
-    if() //sibling NULL
+    node* sibling = getSibling(v);
+    if(sibling == NULL) //sibling NULL
     {
-      //recur parent
+      cout << "snull";
+      delBalance(root, NULL, v->parent);
       return;
     }
     
-    if() //v sibling is black
+    if(sibling->red == false) //v sibling is black
     {
-      if() //sibling child both black
+      
+      if(sibling->child1 == NULL || sibling->child1->red == false)
       {
-        //make sibling red
-        
-        if() //parent black
+        if(sibling->child2 == NULL || sibling->child2->red == false)  //sibling child both black
         {
-          //recursion on parent
-        }
-        else
-        {
-          //make parent red
+          sibling->red = true; //make sibling red
+          
+          if(v->parent->red == false) //parent black
+          {
+            delBalance(root, NULL, v->parent); //recursion on parent
+          }
+          else //parent red
+          {
+            v->parent->red = false; //make parent black
+          }
+          return;
         }
       }
-      else if() //one or more of sibling child is red
-      {
         
+      //one or more of sibling child is red
+      
+      if(sibling == sibling->parent->child1) //sibling on left
+      {
+        if(sibling->child1 != NULL && sibling->child1->red == true) //ll: sibling child1 is red
+        {
+          sibling->child1->red = sibling->red;
+          sibling->red = sibling->parent->red;
+          rotateRight(sibling->parent);
+        }
+        else //lr: sibling child 2 is red
+        {
+          sibling->child2->red = sibling->parent->red;
+          rotateLeft(sibling);
+          rotateRight(sibling->parent);
+        }        
+      }
+      else //sibling on right
+      {
+        if(sibling->child1 != NULL && sibling->child1->red == true) //rr: sibling child1 is red
+        {
+          sibling->child2->red = sibling->red;
+          sibling->red = sibling->parent->red;
+          rotateLeft(sibling->parent);
+        }
+        else //rl: sibling child 2 is red
+        {
+          sibling->child1->red = sibling->parent->red;
+          rotateRight(sibling);
+          rotateLeft(sibling->parent);
+        }
       }
       
+      
+    }
+    else //sibling red
+    {
+      v->parent->red = true;
+      sibling->red = false;
+
+      if(sibling == sibling->parent->child1) //sibling on left
+      {
+        rotateRight(sibling->parent);
+      }
+      else //sibling on right
+      {
+        rotateLeft(sibling->parent);
+      }
+      delBalance(root, u, v);
     }
   }
    else if(u->red == true || v->red == true) //if u or v are red
@@ -654,13 +707,13 @@ node* getSibling(node* n)
       return NULL;
     }
 
-  if(n = n->parent->child1) //n is parent child 1
+  if(n == n->parent->child1) //n is parent child 1
     {
-      return parent->child2; //return child2
+      return n->parent->child2; //return child2
     }
   else //n is parent child2
     {
-      return parent->child1; //return child 1
+      return n->parent->child1; //return child 1
     }
 
 }
