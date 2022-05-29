@@ -32,6 +32,8 @@ node* getUncle(node* n);
 node* getSibling(node* n);
 node* rotateLeft(node* n);
 node* rotateRight(node* n);
+void rotateHelp(node* &root, node* n, node* nParent);
+
 
 int main()
 {
@@ -637,35 +639,36 @@ void delBalance(node* &root, node* u, node* v)
       }
         
       //one or more of sibling child is red
-      
+      node* parent = sibling->parent;
+      node* gp = parent->parent;
       if(sibling == sibling->parent->child1) //sibling on left
       {
         if(sibling->child1 != NULL && sibling->child1->red == true) //ll: sibling child1 is red
         {
           sibling->child1->red = sibling->red;
           sibling->red = sibling->parent->red;
-          rotateRight(sibling->parent);
+          rotateHelp(root, rotateRight(parent), gp);          
         }
         else //lr: sibling child 2 is red
         {
           sibling->child2->red = sibling->parent->red;
-          rotateLeft(sibling);
-          rotateRight(sibling->parent);
+          rotateHelp(root, rotateLeft(sibling), parent);
+          rotateHelp(root, rotateRight(parent), gp);
         }        
       }
       else //sibling on right
       {
-        if(sibling->child1 != NULL && sibling->child1->red == true) //rr: sibling child1 is red
+        if(sibling->child2 != NULL && sibling->child2->red == true) //rr: sibling child1 is red
         {
           sibling->child2->red = sibling->red;
           sibling->red = sibling->parent->red;
-          rotateLeft(sibling->parent);
+          rotateHelp(root, rotateLeft(parent), gp);          
         }
         else //rl: sibling child 2 is red
         {
           sibling->child1->red = sibling->parent->red;
-          rotateRight(sibling);
-          rotateLeft(sibling->parent);
+          rotateHelp(root, rotateRight(sibling), parent);
+          rotateHelp(root, rotateLeft(parent), gp);
         }
       }
       
@@ -772,4 +775,26 @@ node* rotateRight(node* n)
   if(y != NULL)
       y->parent = n;
   return(x);
+}
+
+//connects a rotated subtree to the rest of the tree. Uses the top of the rotated subtree.
+void rotateHelp(node* &root, node* n, node* nParent)
+{
+  if(nParent == NULL)
+  {
+    root = n;
+    root->parent = NULL;
+  }
+  else
+  {
+    n->parent = nParent;
+    if(n == nParent->child1) //sibling on left
+    {
+      nParent->child1 = n; //connect nParent to n
+    }
+    else
+    {
+      nParent->child2 = n;
+    }
+  }
 }
