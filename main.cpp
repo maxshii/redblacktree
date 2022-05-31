@@ -680,13 +680,15 @@ void delBalance(node* &root, node* u, node* v)
       v->parent->red = true;
       sibling->red = false;
 
+      node* parent = sibling->parent;
+      node* gp = parent->parent;
       if(sibling == sibling->parent->child1) //sibling on left
       {
-        rotateRight(sibling->parent);
+        rotateHelp(root, rotateRight(parent), parent, gp);
       }
       else //sibling on right
       {
-        rotateLeft(sibling->parent);
+        rotateHelp(root, rotateLeft(parent), parent, gp);
       }
       delBalance(root, u, v);
     }
