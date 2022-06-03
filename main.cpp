@@ -527,19 +527,22 @@ void remove(node* &root, node* n, node* parent, int value)
        if (parent->child1 == n) //find which parent child points to n
         {
           parent->child1 = n->child1; //parent is linked to n's child
+          n->child1->parent = parent;
           delBalance(root, n->child1, n);
           delete n; 
         }
         else 
         {
-          parent->child2 = n->child1;        
+          parent->child2 = n->child1;    
+          n->child1->parent = parent;
           delBalance(root, n->child1, n);
           delete n;  
         }
       }
       else
       {
-        root = n->child2;
+        root = n->child1;
+        root->parent = NULL;
         root->red = false;
         delete n;
       }
@@ -551,12 +554,14 @@ void remove(node* &root, node* n, node* parent, int value)
         if (parent->child1 == n) //find which parent child points to n
         {
           parent->child1 = n->child2;
+          n->child2->parent = parent;
           delBalance(root, n->child2, n);
           delete n;  
         }
         else 
-        {
+        { 
           parent->child2 = n->child2;   
+          n->child2->parent = parent;
           delBalance(root, n->child2, n);
           delete n;  
         }
@@ -565,6 +570,7 @@ void remove(node* &root, node* n, node* parent, int value)
       {
         root = n->child2;   
         root->red = false;
+        root->parent = NULL;
         delete n; 
       }
     }
@@ -601,7 +607,7 @@ void delBalance(node* &root, node* u, node* v)
     node* sibling = getSibling(v);
     if(sibling == NULL) //sibling NULL
     {
-      cout << "snull";
+      //cout << v->data;
       delBalance(root, NULL, v->parent);
       return;
     }
@@ -690,9 +696,9 @@ void delBalance(node* &root, node* u, node* v)
       {
         rotateHelp(root, rotateLeft(parent), parent, gp);
       }
-      if(u == NULL)
-        cout << "uNULL";
-      print(root, 7);
+      //if(u == NULL)
+      //  cout << "uNULL";
+      //print(root, 7);
       delBalance(root, u, v);
       
       
