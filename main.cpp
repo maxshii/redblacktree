@@ -690,7 +690,12 @@ void delBalance(node* &root, node* u, node* v)
       {
         rotateHelp(root, rotateLeft(parent), parent, gp);
       }
+      if(u == NULL)
+        cout << "uNULL";
+      print(root, 7);
       delBalance(root, u, v);
+      
+      
     }
   }
    else if(u->red == true || v->red == true) //if u or v are red
